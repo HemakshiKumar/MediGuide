@@ -69,4 +69,6 @@ MediGuide is not a replacement for professional medical advice. It is intended o
 ## License
 This project is open-source and available under the MIT License.
 
-## Contributions, issues, and feature requests are welcome! Feel free to open an issue or submit a pull request.
+-
+Contributions, issues, and feature requests are welcome! Feel free to open an issue or submit a pull request.
+---
