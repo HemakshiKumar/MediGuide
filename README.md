@@ -1,5 +1,5 @@
 # 🩺 MediGuide – Intelligent Health Chatbot
--
+---
 MediGuide is an intelligent medical assistant built with Streamlit and a powerful QA chain backend, designed to provide users with reliable and easy-to-understand answers to health-related questions. It simulates a conversational interface where users can input queries in natural language and receive medically-informed responses in real-time.
 ---
 
@@ -69,6 +69,6 @@ MediGuide is not a replacement for professional medical advice. It is intended o
 ## License
 This project is open-source and available under the MIT License.
 
--
+---
 Contributions, issues, and feature requests are welcome! Feel free to open an issue or submit a pull request.
 ---
