@@ -8,11 +8,7 @@ import requests
 import streamlit as st
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
-from langchain_core.language_models.llms import LLM
 from typing import Any, List, Optional
-from pydantic import Field
 
 # Import configurations and token from config.py
 from config import HF_API_TOKEN, MODEL_NAME
@@ -24,42 +20,28 @@ st.set_page_config(
 )
 
 # -------------------------------------------------------------
-# 1. Custom Hugging Face Router LLM
+# 1. Hugging Face Router Query Function
 # -------------------------------------------------------------
-class HFRouterLLM(LLM):
-    token: str = Field(default_factory=lambda: HF_API_TOKEN)
-    model_name: str = MODEL_NAME
-
-    @property
-    def _llm_type(self) -> str:
-        return "huggingface_router"
-
-    def _call(
-        self,
-        prompt: str,
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[Any] = None,
-        **kwargs: Any,
-    ) -> str:
-        url = "https://router.huggingface.co/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Content-Type": "application/json"
-        }
-        payload = {
-            "model": self.model_name,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 512,
-            "temperature": 0.2
-        }
+def query_llm(prompt: str) -> str:
+    url = "https://router.huggingface.co/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {HF_API_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": MODEL_NAME,
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 512,
+        "temperature": 0.2
+    }
+    
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
+    
+    if response.status_code != 200:
+        raise RuntimeError(f"Hugging Face API Error ({response.status_code}): {response.text}")
         
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
-        
-        if response.status_code != 200:
-            raise RuntimeError(f"Hugging Face API Error ({response.status_code}): {response.text}")
-            
-        data = response.json()
-        return data["choices"][0]["message"]["content"].strip()
+    data = response.json()
+    return data["choices"][0]["message"]["content"].strip()
 
 # -------------------------------------------------------------
 # 2. Embeddings & Vector Database
@@ -84,20 +66,16 @@ def get_database():
     )
     return database
 
-@st.cache_resource(show_spinner="Connecting to Model...")
-def get_llm():
-    return HFRouterLLM(token=HF_API_TOKEN, model_name=MODEL_NAME)
-
-def set_custom_prompt(custom_prompt_template: str):
-    return PromptTemplate(template=custom_prompt_template, input_variables=["context", "question"])
-
-@st.cache_resource(show_spinner=False)
-def get_qa_chain():
+def get_medical_answer(question: str) -> str:
     db = get_database()
     if db is None:
-        return None
+        return "⚠️ Medical knowledge base is not loaded."
     
-    prompt_template = """Use the following medical context to provide a clear, comprehensive, and well-explained answer to the question.
+    # Retrieve top relevant context chunks from FAISS
+    docs = db.similarity_search(question, k=4)
+    context = "\n\n".join([doc.page_content for doc in docs])
+    
+    prompt = f"""Use the following medical context to provide a clear, comprehensive, and well-explained answer to the question.
 Provide a detailed response in 2 well-structured paragraphs (covering definitions, causes/symptoms, or relevant medical details found in the context).
 If the information is not present in the context, clearly state "I don't have enough information in the medical guide to answer that."
 
@@ -109,18 +87,8 @@ Question:
 
 Answer:"""
 
-    prompt = set_custom_prompt(prompt_template)
-    llm_instance = get_llm()
-    
-    return RetrievalQA.from_chain_type(
-        llm=llm_instance,
-        chain_type="stuff",
-        retriever=db.as_retriever(search_kwargs={"k": 4}),
-        chain_type_kwargs={"prompt": prompt}
-    )
+    return query_llm(prompt)
 
-def format_answer(text: str) -> str:
-    return text.strip()
 
 # -------------------------------------------------------------
 # 3. Main Streamlit User Interface
@@ -160,25 +128,17 @@ def main():
         with st.chat_message("assistant"):
             with st.spinner("Generating answer..."):
                 try:
-                    qa_chain = get_qa_chain()
-                    if qa_chain is None:
-                        st.error("Failed to initialize QA Chain. Ensure database is built.")
-                        return
-
-                    response = qa_chain.invoke({"query": user_prompt})
-                    raw_result = response.get("result", "")
+                    answer = get_medical_answer(user_prompt)
                     
-                    if "answer:" in raw_result.lower():
-                        ans_to_edit = raw_result[raw_result.lower().find("answer:") + 7:].strip()
-                    else:
-                        ans_to_edit = raw_result.strip()
+                    if "answer:" in answer.lower():
+                        answer = answer[answer.lower().find("answer:") + 7:].strip()
 
-                    ans_formatted = format_answer(ans_to_edit)
-                    st.markdown(ans_formatted)
-                    st.session_state.messages.append({"role": "assistant", "content": ans_formatted})
+                    st.markdown(answer)
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
 
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
+
 
 if __name__ == "__main__":
     main()
