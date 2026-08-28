@@ -1,0 +1,10 @@
+# Environment & Secrets
+.env
+__pycache__/
+*.pyc
+
+# Vector Database
+storedata/
+
+# User PDFs
+book/
