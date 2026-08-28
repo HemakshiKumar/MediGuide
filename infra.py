@@ -67,6 +67,12 @@ def get_database():
     return database
 
 def get_medical_answer(question: str) -> str:
+    cleaned = question.strip().lower().rstrip("!.,?")
+    greetings = {"hi", "hello", "hey", "good morning", "good afternoon", "good evening", "greetings", "hi there", "hello there"}
+    
+    if cleaned in greetings:
+        return "Hello! I am MediGuide, your health assistant. How can I help you today? Feel free to ask any medical or health-related question."
+
     db = get_database()
     if db is None:
         return "⚠️ Medical knowledge base is not loaded."
@@ -75,9 +81,12 @@ def get_medical_answer(question: str) -> str:
     docs = db.similarity_search(question, k=4)
     context = "\n\n".join([doc.page_content for doc in docs])
     
-    prompt = f"""Use the following medical context to provide a clear, comprehensive, and well-explained answer to the question.
-Provide a detailed response in 2 well-structured paragraphs (covering definitions, causes/symptoms, or relevant medical details found in the context).
-If the information is not present in the context, clearly state "I don't have enough information in the medical guide to answer that."
+    prompt = f"""You are MediGuide, a helpful and intelligent health chatbot.
+
+Instructions:
+- If the user is asking a general greeting, polite check-in, or question about your capabilities, respond politely and invite them to ask their health question.
+- For medical questions: Use the provided medical context to give a clear, comprehensive, and well-explained answer in 2 well-structured paragraphs (covering definitions, causes, symptoms, or treatments mentioned in the context).
+- If the question is medical but cannot be answered from the context, state: "I don't have enough information in the medical guide to answer that."
 
 Context:
 {context}
@@ -88,6 +97,7 @@ Question:
 Answer:"""
 
     return query_llm(prompt)
+
 
 
 # -------------------------------------------------------------
