@@ -1,8 +1,9 @@
-# MediGuide – Intelligent Health Chatbot
+c# MediGuide – Intelligent Health Chatbot
 
 MediGuide is an intelligent medical assistant built with **Streamlit**, **LangChain**, and **FAISS**, using Retrieval-Augmented Generation (RAG) to provide fast, reliable, context-grounded answers to medical queries.
 
-Link to website : [https://mediguide-by-hemakshi.streamlit.app/]
+Link to website : [https://mediguide-by-hemakshi.streamlit.app/](https://mediguide-by-hemakshi.streamlit.app/)
+
 ---
 
 ## Features
