@@ -1,15 +1,16 @@
-# 🩺 MediGuide – Intelligent Health Chatbot
+# MediGuide – Intelligent Health Chatbot
 
 MediGuide is an intelligent medical assistant built with **Streamlit**, **LangChain**, and **FAISS**, using Retrieval-Augmented Generation (RAG) to provide fast, reliable, context-grounded answers to medical queries.
 
+Link to website : [https://mediguide-by-hemakshi.streamlit.app/]
 ---
 
-## 🚀 Features
+## Features
 
-- 🧠 **Retrieval-Augmented Generation (RAG)**: Extracts precise medical context from loaded PDF documents.
-- ⚡ **Zero-Lag Cloud Inference**: Uses Hugging Face's Free Serverless Inference API for sub-second responses.
-- 🔍 **FAISS Vector Store**: Fast semantic search using `sentence-transformers/all-MiniLM-L6-v2`.
-- 🖥️ **Streamlit UI**: Clean and interactive chat interface with token configuration in the sidebar.
+- **Retrieval-Augmented Generation (RAG)**: Extracts precise medical context from loaded PDF documents.
+- **Zero-Lag Cloud Inference**: Uses Hugging Face's Free Serverless Inference API for sub-second responses.
+- **FAISS Vector Store**: Fast semantic search using `sentence-transformers/all-MiniLM-L6-v2`.
+- **Streamlit UI**: Clean and interactive chat interface with token configuration in the sidebar.
 
 ---
 
@@ -26,7 +27,7 @@ MediGuide is an intelligent medical assistant built with **Streamlit**, **LangCh
 
 ---
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 1. **Install required dependencies**:
    ```bash
@@ -60,7 +61,7 @@ MediGuide is an intelligent medical assistant built with **Streamlit**, **LangCh
 
 ---
 
-## 📁 Directory Structure
+## Directory Structure
 
 ```bash
 MediGuide/
